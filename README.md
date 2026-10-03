@@ -31,7 +31,8 @@
 graph TD
     User["Creator / User"] --> Dashboard["Next.js 16 Dashboard (Vercel)"]
     Dashboard --> Supabase["Supabase DB & Realtime"]
-    Dashboard --> Backend["FastAPI Backend (Hugging Face Spaces Docker)"]
+    Dashboard --> Tunnel["Cloudflare Tunnel (Secure HTTPS)"]
+    Tunnel --> Backend["FastAPI Local Video Engine (Your Laptop)"]
     Backend --> Supabase
     Backend --> GroqWhisper["Groq Cloud API (Whisper Turbo)"]
     Backend --> Deepgram["Deepgram Nova-2 (Fallback)"]
@@ -118,30 +119,63 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to launch th
 
 ---
 
-## 🌐 Free $0 Production Deployment Guide
+## 🌐 Hybrid Production Deployment Guide ($0 Cost)
 
-### Option 1: Backend on Hugging Face Spaces (Docker)
-1. Create a free account at [Hugging Face](https://huggingface.co/).
-2. Create a **New Space**:
-   - SDK: **Docker** (Blank)
-   - Hardware: **CPU Basic (Free - 16 GB RAM, 2 vCPUs)**
-3. Under **Settings -> Variables and secrets**, add:
-   - `GEMINI_API_KEY`
-   - `GROQ_API_KEYS`
-   - `DEEPGRAM_API_KEY`
-   - `SUPABASE_URL`
-   - `SUPABASE_KEY`
-4. Push the contents of the `backend/` directory to your Space repository.
-5. Hugging Face will automatically build and start your container on port `7860`.
+This architecture gives you the best of both worlds:
+1. **Frontend on Vercel**: Hosted globally on Vercel's high-speed Edge CDN for free.
+2. **AI Video Backend on Your Laptop**: Harnesses your local CPU/GPU and RAM with no container limits or OOM crashes, connected via a free, instant Cloudflare Tunnel.
 
-### Option 2: Frontend on Vercel
-1. Import your GitHub repository into [Vercel](https://vercel.com/).
-2. Set the **Root Directory** to `frontend`.
-3. Add the following Environment Variables in Vercel:
-   - `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase URL
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase Anon Key
-   - `NEXT_PUBLIC_API_URL`: Your Hugging Face Space URL (e.g., `https://username-space-name.hf.space`)
+---
+
+### Step 1: Run Local Backend with Cloudflare Tunnel
+
+To connect your Vercel frontend (which runs over HTTPS) to your laptop without browser Mixed Content blocking:
+
+1. **Double-click `start_backend_tunnel.bat`** in the project root:
+   - Starts your FastAPI backend on `http://localhost:8000`.
+   - Starts a Cloudflare Quick Tunnel automatically using `npx cloudflared`.
+2. Look at the terminal output for your public HTTPS tunnel URL:
+   ```text
+   +-------------------------------------------------------------+
+   | Your quick tunnel has been created! Visit:                 |
+   | https://example-subdomain.trycloudflare.com                |
+   +-------------------------------------------------------------+
+   ```
+3. Copy that URL.
+
+> **Tip**: You can also run it manually anytime in two separate terminals:
+> ```bash
+> # Terminal 1: Backend
+> cd backend
+> python -m uvicorn app:app --port 8000 --reload
+>
+> # Terminal 2: Cloudflare Tunnel
+> npx --yes cloudflared tunnel --url http://localhost:8000
+> ```
+
+---
+
+### Step 2: Deploy Frontend to Vercel
+
+1. Log in to [Vercel](https://vercel.com/) and click **Add New... -> Project**.
+2. Select your GitHub repository (`Oliver0908/Kairo`) and click **Import**.
+3. In the **Project Configuration** screen:
+   - Click **Edit** next to **Root Directory** and select `frontend`.
+   - Under **Environment Variables**, add:
+     - `NEXT_PUBLIC_SUPABASE_URL`: `https://jrhxdhdrixzhihbvqorri.supabase.co`
+     - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: `your_supabase_anon_key`
 4. Click **Deploy**.
+5. Once deployment completes, open your live Vercel URL (e.g. `https://kairo-studio.vercel.app`).
+
+---
+
+### Step 3: Connect Live Vercel Frontend to Your Laptop
+
+1. Open your live Vercel app in your browser.
+2. In the top navbar, click on the **Backend Status** badge (or the Settings icon).
+3. Paste your Cloudflare Tunnel URL (e.g., `https://example-subdomain.trycloudflare.com`).
+4. Click **Test** to verify connection latency, then click **Save & Connect**.
+5. Your Vercel frontend is now live and communicating with your laptop's AI video engine!
 
 ---
 

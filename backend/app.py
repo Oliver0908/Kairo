@@ -16,10 +16,11 @@ os.makedirs("inputs", exist_ok=True)
 app.mount("/outputs", StaticFiles(directory="outputs"), name="outputs")
 app.mount("/inputs", StaticFiles(directory="inputs"), name="inputs")
 
-# Allow Next.js frontend to communicate with this backend
+# Allow Next.js frontend (Vercel, tunnels, localhost) to communicate with this backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # In production, restrict this to your Vercel URL
+    allow_origins=["*"],
+    allow_origin_regex=r"https?://.*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
