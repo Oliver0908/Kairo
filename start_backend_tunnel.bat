@@ -7,22 +7,19 @@ echo        KAIRO AI - Local Backend + Cloudflare Tunnel
 echo ========================================================
 echo.
 
-cd /d "%~dp0"
+set "SCRIPT_DIR=%~dp0"
+cd /d "%SCRIPT_DIR%"
 
-:: 1. Activate Python virtual environment if found
-if exist "venv\Scripts\activate.bat" (
-    echo [INFO] Activating virtual environment (venv)...
-    call venv\Scripts\activate.bat
-) else if exist "..\venv\Scripts\activate.bat" (
-    echo [INFO] Activating virtual environment (..\venv)...
-    call ..\venv\Scripts\activate.bat
+if exist "%SCRIPT_DIR%venv\Scripts\activate.bat" (
+    echo [INFO] Activating virtual environment...
+    call "%SCRIPT_DIR%venv\Scripts\activate.bat"
 ) else (
-    echo [WARN] venv not found at root. Using system Python...
+    echo [WARN] venv not found. Using system Python...
 )
 
 echo.
 echo [1/2] Starting FastAPI backend on http://localhost:8000 ...
-start "Kairo Backend (FastAPI)" cmd /k "cd /d %~dp0backend && python -m uvicorn app:app --host 0.0.0.0 --port 8000 --reload"
+start "Kairo Backend (FastAPI)" cmd /k "cd /d "%SCRIPT_DIR%backend" && python -m uvicorn app:app --host 0.0.0.0 --port 8000 --reload"
 
 echo [2/2] Launching Cloudflare Tunnel for secure HTTPS access...
 echo.
@@ -35,7 +32,6 @@ echo by clicking the 'Backend Status' badge in the top navbar!
 echo --------------------------------------------------------
 echo.
 
-:: Launch Cloudflare Tunnel via npx (zero account or install needed)
-npx --yes cloudflared tunnel --url http://localhost:8000
+cmd /c npx --yes cloudflared tunnel --url http://localhost:8000
 
 pause
