@@ -7,31 +7,26 @@ echo        KAIRO AI - Local Backend + Cloudflare Tunnel
 echo ========================================================
 echo.
 
-set "SCRIPT_DIR=%~dp0"
-cd /d "%SCRIPT_DIR%"
+set "ROOT_DIR=%~dp0"
+cd /d "%ROOT_DIR%"
 
-if exist "%SCRIPT_DIR%venv\Scripts\activate.bat" (
-    echo [INFO] Activating virtual environment...
-    call "%SCRIPT_DIR%venv\Scripts\activate.bat"
-) else (
-    echo [WARN] venv not found. Using system Python...
-)
+echo [1/2] Starting FastAPI backend on http://127.0.0.1:8000 ...
+start "Kairo Backend (FastAPI)" cmd /k "cd /d "%ROOT_DIR%backend" && call "%ROOT_DIR%venv\Scripts\activate.bat" && python -m uvicorn app:app --host 127.0.0.1 --port 8000 --reload"
+
+echo [Waiting 4s for FastAPI to bind to port 8000...]
+timeout /t 4 /nobreak >nul
 
 echo.
-echo [1/2] Starting FastAPI backend on http://localhost:8000 ...
-start "Kairo Backend (FastAPI)" cmd /k "cd /d "%SCRIPT_DIR%backend" && python -m uvicorn app:app --host 0.0.0.0 --port 8000 --reload"
-
 echo [2/2] Launching Cloudflare Tunnel for secure HTTPS access...
-echo.
 echo --------------------------------------------------------
 echo Look below for your public HTTPS tunnel URL:
 echo (It looks like: https://something-random.trycloudflare.com)
 echo.
-echo Copy that URL and paste it into the Kairo UI on Vercel
-echo by clicking the 'Backend Status' badge in the top navbar!
+echo IMPORTANT: Copy the COMPLETE URL including the ".com" at the end!
+echo Paste it into the Kairo UI on Vercel and click Save & Connect.
 echo --------------------------------------------------------
 echo.
 
-cmd /c npx --yes cloudflared tunnel --url http://localhost:8000
+cmd /c npx --yes cloudflared tunnel --url http://127.0.0.1:8000
 
 pause
